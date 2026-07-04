@@ -1,3 +1,3 @@
 #!/bin/bash
-source /home/israelf/venv_indi_pylibcamera/bin/activate
+source camera_venv/bin/activate
 exec indiserver -v indi_pylibcamera
