@@ -1,3 +1,7 @@
 test.jpg
+<<<<<<< HEAD
 camera_venv
 
+=======
+.README_how_install_zero.md.swp
+>>>>>>> 306b674 (feat: add setup guide and start script for INDIGO/INDI camera)
