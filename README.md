@@ -1,3 +1,12 @@
-# to run all as needed you need to run the install_env.sh, than run start_indi.sh
+# INDI Server
+To run the server manually:
+1. Run `./install_env.sh` to install all dependencies and set up the virtual environment.
+2. Run `./start_indi.sh` to launch the INDI server.
+## Running on Boot with Auto-Restart (systemd service)
+To install a systemd service that starts the INDI server automatically on boot and auto-restarts it if it goes down:
+1. Make the script executable: `chmod +x setup_service.sh`
+2. Run it: `./setup_service.sh`
+This script dynamically generates `/etc/systemd/system/indi-server.service`, reloads systemd, enables the service to launch at startup, and starts it immediately.
+## Real-time Video Streaming
+If you want to stream real-time video, run `./start_stream.sh`. You can find the corresponding `ffplay` command inside that file to run on the Windows client side.
 
-# If you want to stream real time video you should run the start_stream.sh, also inside this file you can find a cmd for ffplay to run on the windows side
