@@ -53,17 +53,24 @@ modules-load=dwc2,g_ether
 
 ## 5. Configure the USB network interface
 
+Delete the old config (if exist)
+
+```bash
+sudo nmcli connection delete netplan-eth0
+```
+
 Set the USB Ethernet interface to use a shared IPv4 address and bring it up:
 
 ```bash
 sudo nmcli connection add type ethernet \
-  con-name "netplan-eth0" \
+  con-name "usb-gadget" \
   ifname usb0 \
   ipv4.method manual \
   ipv4.addresses 192.168.5.1/24 \
   ipv4.never-default yes \
+  ipv6.method ignore \
   connection.autoconnect yes
-sudo nmcli connection up "netplan-eth0"
+sudo nmcli connection up "usb-gadget"
 ```
 
 ## 6. Install and configure `dnsmasq`
