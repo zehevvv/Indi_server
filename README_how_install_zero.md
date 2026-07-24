@@ -121,6 +121,19 @@ sudo udevadm control --reload-rules
 ```
 Than reconnect the zero to the rspi that use for relay
 
+## 9. At zero, install the indi server
+Install git and clone the current repo:
+```bash
+sudo apt install git -y
+git clone https://github.com/zehevvv/Indi_server.git
+cd  Indi_server/
+```
+Install the enviroment and the service
+```bash
+./install_env.sh
+./setup_service.sh
+```
+
 ## Notes
 
 - Make sure the USB interface is actually named `usb0` on your device.
