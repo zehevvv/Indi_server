@@ -153,7 +153,16 @@ exit the file and set reboot:
 ```bash
 sudo reboot
 ```
+Because the driver is a shit, we need to fix it
+```bash
+sudo cp /usr/share/libcamera/ipa/rpi/vc4/imx462.json \
+  /usr/share/libcamera/ipa/rpi/vc4/arducam-pivariety.json
 
+sudo cp /usr/share/libcamera/ipa/rpi/pisp/imx462.json \
+  /usr/share/libcamera/ipa/rpi/pisp/arducam-pivariety.json
+
+sudo systemctl restart indi-server
+```
 
 ## Notes
 
