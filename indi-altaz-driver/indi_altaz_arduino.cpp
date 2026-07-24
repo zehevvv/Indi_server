@@ -181,9 +181,12 @@ bool AltAzArduino::sendLine(const std::string &line)
 
 void AltAzArduino::drainInput()
 {
+    // This runs on every periodic status poll (INDI drivers are single-threaded), so the
+    // trailing "no more data" read must time out quickly - a multi-second timeout here would
+    // stall processing of incoming client commands (e.g. button presses) by that same amount.
     char buf[256];
     int nbytes_read = 0;
-    while (tty_read(PortFD, buf, sizeof(buf) - 1, 1, &nbytes_read) == TTY_OK && nbytes_read > 0)
+    while (tty_read_expanded(PortFD, buf, sizeof(buf) - 1, 0, 10000, &nbytes_read) == TTY_OK && nbytes_read > 0)
     {
         // discard - firmware only sends human-readable debug echo, no structured responses
     }
