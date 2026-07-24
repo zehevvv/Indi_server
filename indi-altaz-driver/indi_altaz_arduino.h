@@ -13,6 +13,18 @@ class AltAzArduino : public INDI::Telescope
         virtual const char *getDefaultName() override;
         virtual bool initProperties() override;
 
+        // Shared-port access for AltAzFocuser, which drives the same Arduino's focus motor over
+        // this same serial connection (only one process/fd can hold the port at a time, so the
+        // focuser can't open its own connection - it piggybacks on this one).
+        bool isSerialConnected() const
+        {
+            return PortFD >= 0;
+        }
+        bool sendFocusCommand(const std::string &line)
+        {
+            return sendLine(line);
+        }
+
     protected:
         virtual bool Handshake() override;
         virtual bool ReadScopeStatus() override;

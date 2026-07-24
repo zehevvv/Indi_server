@@ -1,12 +1,19 @@
 #include "indi_altaz_arduino.h"
+#include "indi_arduino_focuser.h"
 
 #include <indicom.h>
 #include <connectionplugins/connectionserial.h>
 
+#include <cstring>
 #include <memory>
 #include <unistd.h>
 
+// Both devices are exposed from this single driver process because they share one physical
+// serial connection to the Arduino (only one process/fd can hold /dev/ttyACM0 at a time) - the
+// focuser piggybacks on the mount's connection rather than opening its own. See
+// AltAzArduino::sendFocusCommand / isSerialConnected and ArduinoFocuser's CONNECTION_NONE setup.
 static std::unique_ptr<AltAzArduino> altaz_arduino(new AltAzArduino());
+static std::unique_ptr<ArduinoFocuser> altaz_focuser(new ArduinoFocuser(altaz_arduino.get()));
 
 AltAzArduino::AltAzArduino()
 {
@@ -192,24 +199,41 @@ void AltAzArduino::drainInput()
     }
 }
 
+static bool targets(const char *dev, INDI::DefaultDevice *device)
+{
+    return dev == nullptr || !strcmp(dev, device->getDeviceName());
+}
+
 void ISGetProperties(const char *dev)
 {
-    altaz_arduino->ISGetProperties(dev);
+    if (targets(dev, altaz_arduino.get()))
+        altaz_arduino->ISGetProperties(dev);
+    if (targets(dev, altaz_focuser.get()))
+        altaz_focuser->ISGetProperties(dev);
 }
 
 void ISNewSwitch(const char *dev, const char *name, ISState *states, char *names[], int n)
 {
-    altaz_arduino->ISNewSwitch(dev, name, states, names, n);
+    if (targets(dev, altaz_arduino.get()))
+        altaz_arduino->ISNewSwitch(dev, name, states, names, n);
+    if (targets(dev, altaz_focuser.get()))
+        altaz_focuser->ISNewSwitch(dev, name, states, names, n);
 }
 
 void ISNewText(const char *dev, const char *name, char *texts[], char *names[], int n)
 {
-    altaz_arduino->ISNewText(dev, name, texts, names, n);
+    if (targets(dev, altaz_arduino.get()))
+        altaz_arduino->ISNewText(dev, name, texts, names, n);
+    if (targets(dev, altaz_focuser.get()))
+        altaz_focuser->ISNewText(dev, name, texts, names, n);
 }
 
 void ISNewNumber(const char *dev, const char *name, double values[], char *names[], int n)
 {
-    altaz_arduino->ISNewNumber(dev, name, values, names, n);
+    if (targets(dev, altaz_arduino.get()))
+        altaz_arduino->ISNewNumber(dev, name, values, names, n);
+    if (targets(dev, altaz_focuser.get()))
+        altaz_focuser->ISNewNumber(dev, name, values, names, n);
 }
 
 void ISNewBLOB(const char *dev, const char *name, int sizes[], int blobsizes[], char *blobs[], char *formats[],
@@ -228,4 +252,5 @@ void ISNewBLOB(const char *dev, const char *name, int sizes[], int blobsizes[], 
 void ISSnoopDevice(XMLEle *root)
 {
     altaz_arduino->ISSnoopDevice(root);
+    altaz_focuser->ISSnoopDevice(root);
 }
