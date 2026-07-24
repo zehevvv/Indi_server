@@ -93,7 +93,7 @@ bool AltAzArduino::MoveWE(INDI_DIR_WE dir, TelescopeMotionCommand command)
     if (command == MOTION_START)
     {
         bool reversed = ReverseMovementSP[REVERSE_WE].getState() == ISS_ON;
-        bool right = (dir == DIRECTION_WEST);
+        bool right = (dir == DIRECTION_EAST);
         if (reversed)
             right = !right;
 
