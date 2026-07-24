@@ -20,6 +20,11 @@ class AltAzArduino : public INDI::Telescope
         virtual bool MoveWE(INDI_DIR_WE dir, TelescopeMotionCommand command) override;
         virtual bool Abort() override;
 
+        // INDI::Telescope only builds the motion-pad/slew-rate properties when
+        // TELESCOPE_CAN_GOTO is set, so that capability bit is declared even though this driver
+        // has no real GOTO. Goto() itself just declines - see .cpp.
+        virtual bool Goto(double ra, double dec) override;
+
     private:
         enum Axis { AXIS_ALT = 0, AXIS_AZ = 1 };
 

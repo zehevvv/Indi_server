@@ -11,7 +11,9 @@ static std::unique_ptr<AltAzArduino> altaz_arduino(new AltAzArduino());
 AltAzArduino::AltAzArduino()
 {
     setVersion(1, 0);
-    SetTelescopeCapability(TELESCOPE_CAN_ABORT, 4);
+    // TELESCOPE_CAN_GOTO is required for INDI::Telescope to build the motion-pad and slew-rate
+    // properties, even though Goto() itself is not implemented - see Goto() below.
+    SetTelescopeCapability(TELESCOPE_CAN_ABORT | TELESCOPE_CAN_GOTO, 4);
     setTelescopeConnection(CONNECTION_SERIAL);
 }
 
@@ -49,6 +51,9 @@ bool AltAzArduino::Handshake()
     ok &= selectAxis(AXIS_AZ);
     ok &= sendLine("m=" + std::to_string(MICROSTEP_MODE));
     ok &= sendLine("e=0");
+
+    if (!ok)
+        LOG_ERROR("Handshake: failed to write startup configuration to one or both axes");
 
     return ok;
 }
@@ -93,6 +98,14 @@ bool AltAzArduino::MoveWE(INDI_DIR_WE dir, TelescopeMotionCommand command)
     }
 
     return stopAxis(AXIS_AZ);
+}
+
+bool AltAzArduino::Goto(double ra, double dec)
+{
+    INDI_UNUSED(ra);
+    INDI_UNUSED(dec);
+    LOG_WARN("This mount has no absolute positioning (no encoders) - GOTO is not supported. Use the directional motion controls instead.");
+    return false;
 }
 
 bool AltAzArduino::Abort()
