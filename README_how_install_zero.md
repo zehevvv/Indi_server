@@ -63,23 +63,14 @@ Set the USB Ethernet interface to use a shared IPv4 address and bring it up:
 
 ```bash
 sudo nmcli connection add type ethernet \
-<<<<<<< HEAD
-  con-name "netplan-eth0" \
-=======
   con-name "usb-gadget" \
->>>>>>> 9bb4a160d18506cdfdd57f8baa7a171cb40860fd
   ifname usb0 \
   ipv4.method manual \
   ipv4.addresses 192.168.5.1/24 \
   ipv4.never-default yes \
-<<<<<<< HEAD
-  connection.autoconnect yes
-sudo nmcli connection up "netplan-eth0"
-=======
   ipv6.method ignore \
   connection.autoconnect yes
 sudo nmcli connection up "usb-gadget"
->>>>>>> 9bb4a160d18506cdfdd57f8baa7a171cb40860fd
 ```
 
 ## 6. Install and configure `dnsmasq`
@@ -112,8 +103,6 @@ dhcp-option=option:dns-server,192.168.5.1
 ```bash
 sudo systemctl restart dnsmasq
 sudo systemctl enable --now dnsmasq
-<<<<<<< HEAD
-=======
 ```
 
 ## 8. At rspi 5 (not the zero!) set the right driver
@@ -173,27 +162,10 @@ sudo cp /usr/share/libcamera/ipa/rpi/pisp/imx462.json \
   /usr/share/libcamera/ipa/rpi/pisp/arducam-pivariety.json
 
 sudo systemctl restart indi-server
->>>>>>> 9bb4a160d18506cdfdd57f8baa7a171cb40860fd
 ```
-
-## 8. At rspi 5 (not the zero!) set the right driver
-Sometimes the rspi 5 that use for relay do problem that it load the cdc-etr drvier and not the rndi, 
-Create the next file:
-```bash
-sudo nano /etc/udev/rules.d/99-rndis-gadget.rules
-```
-Than copy this line:
-```bash
-ACTION=="add", ATTR{idVendor}=="0525", ATTR{idProduct}=="a4a2", ATTR{bConfigurationValue}="1"
-```
-Save the file and exit, than reload the rules
-```bash
-sudo udevadm control --reload-rules
-```
-Than reconnect the zero to the rspi that use for relay
 
 ## Notes
 
 - Make sure the USB interface is actually named `usb0` on your device.
 - Adjust the DHCP range if needed for your network.
-- If `netplan-eth0` is not found, verify the connection name with `nmcli connection show`.
+- If `usb-gadget` is not found, verify the connection name with `nmcli connection show`.
