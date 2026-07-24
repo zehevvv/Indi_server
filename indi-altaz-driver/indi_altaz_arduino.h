@@ -44,11 +44,10 @@ class AltAzArduino : public INDI::Telescope
         // max-microstep setting on the DRV8825 driver boards actually in use here.
         static constexpr int MICROSTEP_MODE = 16;
 
-        // Pulse period presets in microseconds, kept under the ~10us (100,000 steps/sec) tested
-        // stall ceiling with margin. With a 1.8deg/200-step motor, this microstep setting, and a
-        // 1:625 gear reduction, 1 microstep = 0.00018deg at the axis.
-        static constexpr long PULSE_US_GUIDE     = 200; // ~5,000 steps/s  (~0.9 deg/s at the axis)
-        static constexpr long PULSE_US_CENTERING = 60;  // ~16,600 steps/s (~3.0 deg/s)
-        static constexpr long PULSE_US_FIND      = 30;  // ~33,000 steps/s (~5.9 deg/s)
-        static constexpr long PULSE_US_SLEW_MAX  = 20;  // ~50,000 steps/s (~9.0 deg/s, margin under the 100k/s limit)
+        // Pulse period presets in microseconds. With a 1.8deg/200-step motor, this microstep
+        // setting, and a 1:625 gear reduction, 1 microstep = 0.00018deg at the axis.
+        static constexpr long PULSE_US_GUIDE     = 10000; // 100 steps/s     (~0.018 deg/s at the axis)
+        static constexpr long PULSE_US_CENTERING = 1000;  // 1,000 steps/s  (~0.18 deg/s)
+        static constexpr long PULSE_US_FIND      = 100;   // 10,000 steps/s (~1.8 deg/s)
+        static constexpr long PULSE_US_SLEW_MAX  = 10;    // 100,000 steps/s (~18 deg/s - the tested stall ceiling exactly, no margin)
 };
