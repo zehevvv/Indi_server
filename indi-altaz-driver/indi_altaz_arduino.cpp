@@ -70,6 +70,9 @@ bool AltAzArduino::ReadScopeStatus()
 
 bool AltAzArduino::MoveNS(INDI_DIR_NS dir, TelescopeMotionCommand command)
 {
+    // Physically, the "up/down" (v=0) motor drives azimuth and the "right/left" (v=1) motor
+    // drives altitude on this mount - the reverse of what the firmware's variable names suggest.
+    // NS (altitude) commands are therefore routed to AXIS_AZ (v=1).
     if (command == MOTION_START)
     {
         bool reversed = ReverseMovementSP[REVERSE_NS].getState() == ISS_ON;
@@ -78,14 +81,15 @@ bool AltAzArduino::MoveNS(INDI_DIR_NS dir, TelescopeMotionCommand command)
             up = !up;
 
         long pulseUs = pulseUsForRate(IUFindOnSwitchIndex(&SlewRateSP));
-        return startAxis(AXIS_ALT, up ? 1 : 0, pulseUs);
+        return startAxis(AXIS_AZ, up ? 1 : 0, pulseUs);
     }
 
-    return stopAxis(AXIS_ALT);
+    return stopAxis(AXIS_AZ);
 }
 
 bool AltAzArduino::MoveWE(INDI_DIR_WE dir, TelescopeMotionCommand command)
 {
+    // See note in MoveNS: WE (azimuth) commands are routed to AXIS_ALT (v=0).
     if (command == MOTION_START)
     {
         bool reversed = ReverseMovementSP[REVERSE_WE].getState() == ISS_ON;
@@ -94,10 +98,10 @@ bool AltAzArduino::MoveWE(INDI_DIR_WE dir, TelescopeMotionCommand command)
             right = !right;
 
         long pulseUs = pulseUsForRate(IUFindOnSwitchIndex(&SlewRateSP));
-        return startAxis(AXIS_AZ, right ? 1 : 0, pulseUs);
+        return startAxis(AXIS_ALT, right ? 1 : 0, pulseUs);
     }
 
-    return stopAxis(AXIS_AZ);
+    return stopAxis(AXIS_ALT);
 }
 
 bool AltAzArduino::Goto(double ra, double dec)
