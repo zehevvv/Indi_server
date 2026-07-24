@@ -133,6 +133,27 @@ Install the enviroment and the service
 ./install_env.sh
 ./setup_service.sh
 ```
+## 10. Install camera arducam462 (optionall)
+Run this commands:
+```bash
+wget -O install_pivariety_pkgs.sh https://github.com/ArduCAM/Arducam-Pivariety-V4L2-Driver/releases/download/install_script/install_pivariety_pkgs.sh
+chmod +x install_pivariety_pkgs.sh
+./install_pivariety_pkgs.sh -p libcamera_dev
+./install_pivariety_pkgs.sh -p libcamera_apps
+```
+
+Open configure file:
+```bash
+sudo nano /boot/firmware/config.txt
+```
+in the file:
+1. set "camera_auto_detect=0"
+2. Add dtoverlay=arducam-pivariety under the [all] section
+exit the file and set reboot:
+```bash
+sudo reboot
+```
+
 
 ## Notes
 
