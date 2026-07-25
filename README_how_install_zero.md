@@ -164,6 +164,75 @@ sudo cp /usr/share/libcamera/ipa/rpi/pisp/imx462.json \
 sudo systemctl restart indi-server
 ```
 
+## 11. Auto-load saved camera config on connect (optional, risky)
+
+By default, `indi_pylibcamera` only restores a saved configuration (`CONFIG_SAVE`/`CONFIG_LOAD` in
+the INDI Control Panel - e.g. `CCD_FAST_TOGGLE`, gain, exposure format, frame ROI, etc.) when a
+client explicitly presses "Load". It does **not** reapply the saved config automatically after a
+reconnect or a reboot, so anything you configured and saved reverts to driver defaults every time
+you connect unless you remember to click "Load" first.
+
+This patch makes the driver auto-apply the last saved config (whatever profile `APPLY_CONFIG` is
+set to, default `CONFIG1`) immediately on every successful camera connect, by reusing the same
+code path the "Load" button already triggers.
+
+**This step is optional** - skip it if you're fine manually pressing "Load" after each connect.
+
+**It is also risky**, because it directly edits the installed third-party pip package file rather
+than your own code:
+- If `indi_pylibcamera` is ever reinstalled or upgraded (`pip install --upgrade indi_pylibcamera`,
+  a fresh `camera_venv`, etc.), this edit is silently lost and needs to be reapplied by hand.
+- It's not an upstream-supported behavior change - just a local hack, not a config flag.
+- Consider proposing it as a PR to [scriptorron/indi_pylibcamera](https://github.com/scriptorron/indi_pylibcamera)
+  instead, if you want this to survive upgrades properly.
+
+Edit the **active** venv's copy (check `start_indi.sh` to confirm which `camera_venv` is actually
+used - there can be more than one on disk):
+
+```bash
+nano ~/Indi_server/camera_venv/lib/python3.13/site-packages/indi_pylibcamera/indi_pylibcamera.py
+```
+
+Find `class ConnectionVector`'s `set_byClient` method and change:
+
+```python
+        if self.get_OnSwitches()[0] == "CONNECT":
+            if self.parent.openCamera():
+                self.state = IVectorState.OK
+            else:
+                self.state = IVectorState.ALERT
+        else:
+```
+
+to:
+
+```python
+        if self.get_OnSwitches()[0] == "CONNECT":
+            if self.parent.openCamera():
+                self.state = IVectorState.OK
+                # Auto-load the last saved configuration (local patch, not upstream default) -
+                # otherwise settings like CCD_FAST_TOGGLE only come back if a client manually
+                # presses "Load" in the Configuration section after every connect.
+                self.parent.knownVectors["CONFIG_PROCESS"].set_byClient({"CONFIG_LOAD": ISwitchState.ON})
+            else:
+                self.state = IVectorState.ALERT
+        else:
+```
+
+Then restart the service:
+
+```bash
+sudo systemctl restart indi-server
+```
+
+If the restart hangs in a "deactivating" state, the old `indi_pylibcamera` Python process may not
+be shutting down cleanly (seen with libcamera resource cleanup) - check `ps aux | grep indi` for a
+leftover process and `sudo kill -9 <pid>` it, then the service should start normally.
+
+Verify it worked: connect the camera in the INDI Control Panel and confirm the log shows
+`loading configuration from .../CONFIG1.json` right after `opening camera`, with no manual "Load"
+click.
+
 ## Notes
 
 - Make sure the USB interface is actually named `usb0` on your device.
